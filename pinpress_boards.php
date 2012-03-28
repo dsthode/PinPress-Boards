@@ -34,7 +34,7 @@ add_action('init', 'pin_register');
 function pin_register() {
  
 	$labels = array(
-		'name' => _x('My Pins', 'post type general name'),
+		'name' => _x('PinPress', 'post type general name'),
 		'singular_name' => _x('Pin Item', 'post type singular name'),
 		'add_new' => _x('Add New', 'pin item'),
 		'add_new_item' => __('Add New Pin Item'),
@@ -127,7 +127,7 @@ function pin_image_meta() {
 		jQuery('#pin_image').val('');
 	}
 	function pin_fetch_images() {
-		jQuery.get('<?php echo get_bloginfo("template_url"); ?>/fetch_images.php', {source_url: jQuery('#pin_source_url').val()}, pin_process_images);
+		jQuery.get('<?php echo plugin_dir_url(__FILE__); ?>/fetch_images.php', {source_url: jQuery('#pin_source_url').val()}, pin_process_images);
 	}
 	
 	function pin_process_images(data, textStatus, jqXHR) {
@@ -270,7 +270,7 @@ function pinpress_board_shortcode($atts) {
 add_shortcode('pinpress_board', 'pinpress_board_shortcode');
 
 function pinpress_board_pin($pin_url, $image_url, $title, $text) {
-	$base_url = get_bloginfo('template_url');
+	$base_url = plugin_dir_url(__FILE__);
 	$text = <<<EOT
 	<div class="pinpress_pin_item" style="width:170px;border:1px solid #cccccc;padding:5px;margin:5px;">
 		<a href="$pin_url">
