@@ -250,7 +250,7 @@ function pinpress_board_shortcode($atts) {
 		if ($atts['columns']) {
 			$columns = $atts['columns'];
 		}
-		$args = array('post_type' => 'pin', 'tax_query' => array('taxonomy' => 'Boards', 'field' => 'slug', 'terms' => $atts['board']));
+		$args = array('post_type' => 'pin', 'boards' => $atts['board']);
 		$query = new WP_Query($args);
 		$count = 0;
 		$columns_text = array();
