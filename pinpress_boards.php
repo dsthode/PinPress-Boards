@@ -29,9 +29,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 /* Custom post types (pinboard and pins like) */
 
-add_action('init', 'pin_register');
+add_action('init', 'pinpress_pin_register');
  
-function pin_register() {
+function pinpress_pin_register() {
  
 	$labels = array(
 		'name' => _x('PinPress', 'post type general name'),
@@ -66,42 +66,60 @@ function pin_register() {
 	flush_rewrite_rules();
 }
 
-add_action("admin_init", "admin_init");
+add_action("admin_init", "pinpress_admin_init");
  
-function admin_init(){
-  add_meta_box("pin_image_meta", "Pin image", "pin_image_meta", "pin", "normal", "low");
+function pinpress_admin_init(){
+  add_meta_box("pin_image_meta", "Pin image", "pinpress_pin_image_meta", "pin", "normal", "low");
 }
  
-function pin_image_meta() {
+function pinpress_pin_image_meta() {
   global $post;
   $custom = get_post_custom($post->ID);
   $pin_image = $custom["pin_source_image_url"][0];
   $pin_source = $custom["pin_source_url"][0];
   wp_enqueue_script('jquery');
+  wp_enqueue_style('pinpress_style', plugins_url('pinpress_style.css', __FILE__));
   ?>
   <p><label>Pin image:</label><br />
-  <input id="pin_image" name="pin_image" value="<?php echo $pin_image; ?>"></input></p>
+  <input id="pinpress_pin_image" name="pinpress_pin_image" value="<?php echo $pin_image; ?>"></input></p>
   <p><label>Pin source:</label><br />
-  <input id="pin_source" name="pin_source" value="<?php echo $pin_source; ?>"></input></p>
-  <p><button type="button" id="clear_pin_data">Clear pin data</button><button type="button" id="open_pin_data">Enter pin data</button></p>
+  <input id="pinpress_pin_source" name="pinpress_pin_source" value="<?php echo $pin_source; ?>"></input></p>
+  <p>
+	<button type="button" id="pinpress_clear_pin_data" class="button">Clear pin data</button>
+	<button type="button" id="pinpress_open_pin_data" class="button">Enter pin data</button>
+  </p>
 
-<div id="pin_data_container" style="display:none;">
-<div id="pin_data" style="position:fixed;width:400px;height:300px;top:50%;left:50%;margin-top:-150px;margin-left:-200px;background-color:white;border:1px solid black;z-index:20001;padding:10px;">
-	<div>Enter pin source URL</div>
-	<input type="text" id="pin_source_url"></input>
-	<button id="pin_fetch_images" type="button">Fetch images</button>
-	<div>Choose image:</div>
-	<div id="pin_image_chooser" style="width:100%;">
-		<div>Image <span id="pin_image_index">0</span> of <span id="pin_images_count">0</span></div>
-		<div style="width:150px;height:150px;">
-		<img src="" id="pin_current_image" style="max-width:150px;max-height:150px;"><br/>
-		</div>
-		<a id="pin_previous_image" style="left:0;cursor:pointer;">&larr;Previous</a>
-		<a id="pin_next_image" style="right:0;cursor:pointer;">Next&rarr;</a>
+<div id="pinpress_pin_data_container">
+<div id="pinpress_pin_data">
+	<div class="pinpress_dialog_header">
+		<div class="pinpress_dialog_title">Enter pin source URL</div>
 	</div>
-	<div><button type="button" id="cancel_pin_data">Cancel</button><button type="button" id="submit_pin_data">Submit</button></div>
+	<div class="pinpress_dialog_body">
+		<input type="text" id="pinpress_pin_source_url" value="<?php echo $pin_source; ?>"></input>
+		<div class="pinpress_fetch_images_button_container">
+			<button id="pinpress_pin_fetch_images" type="button" class="button">Fetch images</button>
+		</div>
+		<div>Choose image: Image <span id="pinpress_pin_image_index">0</span> of <span id="pinpress_pin_images_count">0</span></div>
+		<div id="pinpress_pin_image_chooser">
+			<div id="pinpress_previous_button_container">
+				<button type="button" class="button" id="pinpress_pin_previous_image">&larr;Previous</button>
+			</div>
+			<div id="pinpress_pin_image_container">				
+				<img src="<?php echo $pin_image; ?>" id="pinpress_pin_current_image"><br/>
+			</div>
+			<div id="pinpress_next_button_container">
+				<button type="button" class="button" id="pinpress_pin_next_image">Next&rarr;</button>
+			</div>
+		</div>
+	</div>
+	<div class="pinpress_dialog_footer">
+		<div id="pinpress_dialog_footer_buttons">
+			<button type="button" id="pinpress_cancel_pin_data" class="button">Cancel</button>
+			<button type="button" id="pinpress_submit_pin_data" class="button-primary">Submit</button>
+		</div>
+	</div>
 </div>
-<div id="pin_data_bg" style="position:fixed;top:0;left:0;width:100%;height:100%;background-color:black;z-index:20000;opacity:0.7;filter:alpha(opacity=70);"></div>
+<div id="pinpress_pin_data_bg"></div>
 </div>
 <script type="text/javascript">
 
@@ -109,62 +127,63 @@ function pin_image_meta() {
 	var currentIndex = 0;
 	
 	jQuery(document).ready(function() {
-		jQuery('#open_pin_data').on('click', open_pin_data);
-		jQuery('#clear_pin_data').on('click', clear_pin_data);
-		jQuery('#pin_fetch_images').on('click', pin_fetch_images);
-		jQuery('#submit_pin_data').on('click', submit_pin_data);
-		jQuery('#cancel_pin_data').on('click', cancel_pin_data);
-		jQuery('#pin_previous_image').on('click', pin_previous_image);
-		jQuery('#pin_next_image').on('click', pin_next_image);
+		jQuery('#pinpress_open_pin_data').on('click', pinpress_open_pin_data);
+		jQuery('#pinpress_clear_pin_data').on('click', pinpress_clear_pin_data);
+		jQuery('#pinpress_pin_fetch_images').on('click', pinpress_pin_fetch_images);
+		jQuery('#pinpress_submit_pin_data').on('click', pinpress_submit_pin_data);
+		jQuery('#pinpress_cancel_pin_data').on('click', pinpress_cancel_pin_data);
+		jQuery('#pinpress_pin_previous_image').on('click', pinpress_pin_previous_image);
+		jQuery('#pinpress_pin_next_image').on('click', pinpress_pin_next_image);
 	});
 	
-	function open_pin_data() {
-		jQuery("#pin_data_container").show();
+	function pinpress_open_pin_data() {
+		jQuery("#pinpress_pin_data_container").show();
 	}
 	
-	function clear_pin_data() {
-		jQuery('#pin_source').val('');
-		jQuery('#pin_image').val('');
+	function pinpress_clear_pin_data() {
+		jQuery('#pinpress_pin_source').val('');
+		jQuery('#pinpress_pin_image').val('');
 	}
-	function pin_fetch_images() {
-		jQuery.get('<?php echo plugin_dir_url(__FILE__); ?>/fetch_images.php', {source_url: jQuery('#pin_source_url').val()}, pin_process_images);
+	function pinpress_pin_fetch_images() {
+		jQuery('#pinpress_pin_current_image').attr('src', '<?php echo plugins_url("ajax_load.gif", __FILE__); ?>');
+		jQuery.get('<?php echo plugin_dir_url(__FILE__); ?>/fetch_images.php', {source_url: jQuery('#pinpress_pin_source_url').val()}, pinpress_pin_process_images);
 	}
 	
-	function pin_process_images(data, textStatus, jqXHR) {
+	function pinpress_pin_process_images(data, textStatus, jqXHR) {
 		currentImages = data;
 		currentIndex = 0;
 		if (currentImages.length > 0) {
-			jQuery('#pin_images_count').html(currentImages.length);
-			pin_set_image();
+			jQuery('#pinpress_pin_images_count').html(currentImages.length);
+			pinpress_pin_set_image();
 		}
 	}
 	
-	function submit_pin_data() {
-		jQuery('#pin_data_container').hide();
-		jQuery('#pin_source').val(jQuery('#pin_source_url').val());
-		jQuery('#pin_image').val(currentImages[currentIndex]);
+	function pinpress_submit_pin_data() {
+		jQuery('#pinpress_pin_data_container').hide();
+		jQuery('#pinpress_pin_source').val(jQuery('#pinpress_pin_source_url').val());
+		jQuery('#pinpress_pin_image').val(currentImages[currentIndex]);
 	}
 
-	function cancel_pin_data() {
-		jQuery('#pin_data_container').hide();
+	function pinpress_cancel_pin_data() {
+		jQuery('#pinpress_pin_data_container').hide();
 	}
 	
-	function pin_set_image() {
-		jQuery('#pin_current_image').attr('src', currentImages[currentIndex]);
-		jQuery('#pin_image_index').html(currentIndex + 1);		
+	function pinpress_pin_set_image() {
+		jQuery('#pinpress_pin_current_image').attr('src', currentImages[currentIndex]);
+		jQuery('#pinpress_pin_image_index').html(currentIndex+1);		
 	}
 	
-	function pin_previous_image() {
+	function pinpress_pin_previous_image() {
 		if (currentIndex > 0) {
 			currentIndex -= 1;
-			pin_set_image();
+			pinpress_pin_set_image();
 		}
 	}
 	
-	function pin_next_image() {
-		if (currentIndex < currentImages.length) {
+	function pinpress_pin_next_image() {
+		if (currentIndex < (currentImages.length-1)) {
 			currentIndex += 1;
-			pin_set_image();
+			pinpress_pin_set_image();
 		}
 	}
 
@@ -173,17 +192,15 @@ function pin_image_meta() {
 <?php
 }
 
-add_action('save_post', 'save_details');
-
-function save_details(){
+function pinpress_save_details(){
   global $post;
-  if (strlen($_POST['pin_image']) > 0) {
+  if (strlen($_POST['pinpress_pin_image']) > 0) {
 	$post_meta = get_post_custom($post->ID);
-	if ((strcmp($post_meta['pin_source_image_url'][0], $_POST['pin_image']) != 0) || !file_exists($post_meta['pin_local_file'][0])) {
-		$pin_local_data = pinpress_handle_upload($_POST['pin_image']);
+	if ((strcmp($post_meta['pin_source_image_url'][0], $_POST['pinpress_pin_image']) != 0) || !file_exists($post_meta['pin_local_file'][0])) {
+		$pin_local_data = pinpress_handle_upload($_POST['pinpress_pin_image']);
 		if (!$pin_local_data['error']) {
-			update_post_meta($post->ID, 'pin_source_image_url', $_POST['pin_image']);
-			update_post_meta($post->ID, 'pin_source_url', $_POST['pin_source']);
+			update_post_meta($post->ID, 'pin_source_image_url', $_POST['pinpress_pin_image']);
+			update_post_meta($post->ID, 'pin_source_url', $_POST['pinpress_pin_source']);
 			update_post_meta($post->ID, 'pin_local_file', $pin_local_data['file']);
 			update_post_meta($post->ID, 'pin_local_url', $pin_local_data['url']);
 			update_post_meta($post->ID, 'pin_image_width', $pin_local_data['width']);
@@ -193,33 +210,9 @@ function save_details(){
   }
 }
 
-function pinpress_handle_upload($image_url) {
-	$pathinfo = pathinfo($image_url);
-	$data = file_get_contents($image_url);
-	$local_file_name = uniqid('pinpress_', true) . '_' . uniqid('', true) . '.jpg';
-	$res = wp_upload_bits($local_file_name, null, $data);
-	$imagesize = getimagesize($res['file']);
-	$res['width'] = $imagesize[0];
-	$res['height'] = $imagesize[1];
-	$res['mime'] = $imagesize['mime'];
-  return $res;
-}
+add_action('save_post', 'pinpress_save_details');
 
-add_action("manage_posts_custom_column",  "pin_custom_columns");
-add_filter("manage_edit-pin_columns", "pin_edit_columns");
- 
-function pin_edit_columns($columns){
-  $columns = array(
-    "cb" => "<input type=\"checkbox\" />",
-    "title" => "Pin Title",
-    "pin_source_url" => "Pin source URL",
-	"boards" => "Boards"
-  );
- 
-  return $columns;
-}
-
-function pin_custom_columns($column){
+function pinpress_pin_custom_columns($column){
   global $post;
  
   switch ($column) {
@@ -233,58 +226,36 @@ function pin_custom_columns($column){
   }
 }
 
-function script_url() {
-	$url = $_SERVER['REQUEST_URI']; //returns the current URL
-	$parts = explode('/',$url);
-	$dir = $_SERVER['SERVER_NAME'];
-	for ($i = 0; $i < count($parts) - 1; $i++) {
-	 $dir .= $parts[$i] . "/";
-	}
-	return $dir;
+function pinpress_pin_edit_columns($columns){
+  $columns = array(
+    "cb" => "<input type=\"checkbox\" />",
+    "title" => "Pin Title",
+    "pin_source_url" => "Pin source URL",
+	"boards" => "Boards"
+  );
+ 
+  return $columns;
 }
 
+add_action("manage_posts_custom_column",  "pinpress_pin_custom_columns");
+add_filter("manage_edit-pin_columns", "pinpress_pin_edit_columns");
+
 function pinpress_board_shortcode($atts) {
+	wp_enqueue_style('pinpress_style', plugins_url('pinpress_style.css', __FILE__));
 	$board_text = '';
 	if ($atts['board']) {
+		$board = $atts['board'];
 		$columns = 3;
 		if ($atts['columns']) {
 			$columns = $atts['columns'];
 		}
-		$args = array('post_type' => 'pin', 'boards' => $atts['board']);
-		$query = new WP_Query($args);
-		$count = 0;
-		$columns_text = array();
-		while ($query->have_posts()) : $query->the_post();
-			$post_custom = get_post_custom();
-			$text = pinpress_board_pin($post_custom['pin_source_url'][0], $post_custom['pin_local_url'][0], get_the_title(), get_the_content());
-			$columns_text[$count % $columns] = $columns_text[$count % $columns] . $text;
-			$count += 1;
-		endwhile;
-		for ($i=0;$i<$columns;$i++) {
-			$board_text = $board_text . '<div style="display:inline-block;align:top;vertical-align:top;">' . $columns_text[$i] . '</div>';
-		}
+		$board_text = pinpress_load_pins($board, $columns, 0);
 	}
 	return $board_text;
 }
 
 add_shortcode('pinpress_board', 'pinpress_board_shortcode');
 
-function pinpress_board_pin($pin_url, $image_url, $title, $text) {
-	$base_url = plugin_dir_url(__FILE__);
-	$text = <<<EOT
-	<div class="pinpress_pin_item" style="width:170px;border:1px solid #cccccc;padding:5px;margin:5px;">
-		<a href="$pin_url">
-			<div class="pinpress_pin_title"><strong>$title</strong></div>
-			<img src="$base_url/timthumb.php?src=$image_url&w=150" width="150" style="padding:none;border:none;background:none;margin:none;"/>
-		</a>
-		<div>$text</div>
-	</div>
-EOT;
-	return $text;
-}
-
-function horizontal($width, $height) {
-	return $width > $height;
-}
+include 'pinpress_functions.php';
 
 ?>

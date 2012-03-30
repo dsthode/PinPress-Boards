@@ -24,7 +24,13 @@ $results = array();
 
 if (strlen($source_url) > 0) {
 	$content = file_get_contents($source_url);
+	error_log('source url is ' . $source_url);
 	if (strlen($content) > 0) {
+		$host = false;
+		if (preg_match("/^(https?:\/\/[^\/]+).*/", $source_url, $matches)) {
+			$host = $matches[1];
+			error_log('host is ' . $host);
+		}
 		$dom = new DOMDocument;
 		$dom->loadHTML($content);
 		$base = '';
@@ -44,6 +50,8 @@ if (strlen($source_url) > 0) {
 			$src = $imgs->item($i)->getAttribute('src');
 			if ((strncasecmp($src, 'http://', 7) == 0) || (strncasecmp($src, 'https://', 8) == 0)) {
 				array_push($results, $src);
+			} else if (strncasecmp($src, '/', 1) == 0) {
+				array_push($results, $host . $src);
 			} else {
 				array_push($results, $base . $src);
 			}

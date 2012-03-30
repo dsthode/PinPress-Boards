@@ -1,0 +1,76 @@
+#pinpress_pin_data_container {
+	display:none;
+}
+
+#pinpress_pin_data {
+	position:fixed;width:325px;top:20%;left:50%;margin-left:-175px;background-color:white;border:1px solid black;z-index:20001;
+}
+
+#pinpress_pin_data_bg {
+	position:fixed;top:0;left:0;width:100%;height:100%;background-color:black;z-index:20000;opacity:0.7;filter:alpha(opacity=70);
+}
+
+#pinpress_pin_image_container {
+	width:150px;
+	height:150px;
+}
+
+#pinpress_pin_current_image {
+	max-width:150px;
+	max-height:150px;
+}
+
+.pinpress_dialog_header {
+	width:100%;height:40px;background-color:#eeeeee;position:relative;
+}
+
+.pinpress_dialog_title {
+	color:black;font-size:2em;position:absolute;bottom:5px;padding:5px;
+}
+
+.pinpress_dialog_body {
+	padding:10px;position:relative;
+}
+
+.pinpress_dialog_footer {
+	height:3em;background-color:#eee;
+}
+
+#pinpress_dialog_footer_buttons {
+	bottom:1em;margin-left:55%;padding-top:0.5em;
+}
+
+#pinpress_pin_source_url {
+	width:100%;
+}
+
+#pinpress_pin_fetch_images {
+}
+
+#pinpress_pin_image_chooser {
+	width:100%;height:150px;
+}
+
+#pinpress_fetch_images_button_container {
+	width:100%;
+}
+
+#pinpress_previous_button_container {
+	clear:left;display:inline-block;height:150px;vertical-align:top;
+}
+
+#pinpress_pin_image_container {
+	width:150px;height:150px;clear:none;display:inline-block;
+}
+
+#pinpress_next_button_container {
+	clear:right;display:inline-block;height:150px;vertical-align:top;
+}
+
+#pinpress_pin_previous_image {
+	margin-top:5em;
+}
+
+#pinpress_pin_next_image {
+	margin-top:5em;
+}
