@@ -1,25 +1,29 @@
 <?php 
-function pinpress_load_pins($board, $columns, $paged) {
-	$args = array('post_type' => 'pin', 'boards' => $board, 'posts_per_page' => 35, 'paged' => $paged);
+
+function pinpress_get_load_more_pins($board, $columns, $offset) {
+	global $pinpress_pins_per_page;
+	return '<div id="pinpress_more_pins_container"><a id="pinpress_load_more_pins" href="#" onclick="javascript:pinpress_load_more_pins(\'' . $board . '\', ' . $columns . ', ' . $offset . ');return false;">Load more pins</a></div>';
+}
+
+function pinpress_load_pins($board, $columns, $offset) {
+	global $pinpress_pins_per_page;
+	$args = array('post_type' => 'pin', 'boards' => $board, 'posts_per_page' => $pinpress_pins_per_page, 'offset' => $offset);
 	$query = new WP_Query($args);
 	$count = 0;
 	$columns_text = array();
-	$board_text = '';
+	$board_text = "<div>";
 	while ($query->have_posts()) : $query->the_post();
 		$post_custom = get_post_custom();
 		$text = pinpress_board_pin($post_custom['pin_source_url'][0], $post_custom['pin_local_url'][0], get_the_title(), get_the_content());
 		$columns_text[$count % $columns] = $columns_text[$count % $columns] . $text;
 		$count += 1;
 	endwhile;
-	for ($i=0;$i<$columns;$i++) {
-		$board_text = $board_text . '<div style="display:inline-block;align:top;vertical-align:top;">' . $columns_text[$i] . '</div>';
-	}
-	return $board_text;
+	return $columns_text;
 }
 
 function pinpress_board_pin($pin_url, $image_url, $title, $text) {
 	$base_url = plugin_dir_url(__FILE__);
-	$text = <<<EOT
+	$text = <<<EOT2
 	<div class="pinpress_pin_item" style="width:170px;border:1px solid #cccccc;padding:5px;margin:5px;">
 		<a href="$pin_url">
 			<div class="pinpress_pin_title"><strong>$title</strong></div>
@@ -27,7 +31,7 @@ function pinpress_board_pin($pin_url, $image_url, $title, $text) {
 		</a>
 		<div>$text</div>
 	</div>
-EOT;
+EOT2;
 	return $text;
 }
 
