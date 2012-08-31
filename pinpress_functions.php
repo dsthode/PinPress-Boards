@@ -2,7 +2,12 @@
 
 function pinpress_get_load_more_pins($board, $columns, $offset) {
 	global $pinpress_pins_per_page;
-	return '<div id="pinpress_more_pins_container"><a id="pinpress_load_more_pins" href="#" onclick="javascript:pinpress_load_more_pins(\'' . $board . '\', ' . $columns . ', ' . $offset . ');return false;">Load more pins</a></div>';
+	$text = <<<EOT3
+	<div id="pinpress_more_pins_container">
+		<a id="pinpress_load_more_pins" href="#" onclick="javascript:pinpress_load_more_pins('$board', '$columns', '$offset');return false;">Load more pins</a>
+	</div>
+EOT3;
+	return $text;
 }
 
 function pinpress_load_pins($board, $columns, $offset) {
@@ -18,7 +23,7 @@ function pinpress_load_pins($board, $columns, $offset) {
 		$columns_text[$count % $columns] = $columns_text[$count % $columns] . $text;
 		$count += 1;
 	endwhile;
-	return $columns_text;
+	return array($columns_text, $count);
 }
 
 function pinpress_board_pin($pin_url, $image_url, $title, $text) {

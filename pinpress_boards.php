@@ -245,6 +245,7 @@ add_filter("manage_edit-pin_columns", "pinpress_pin_edit_columns");
 function pinpress_board_shortcode($atts) {
 	global $pinpress_pins_per_page;
 	wp_enqueue_style('pinpress_style', plugins_url('pinpress_style.css', __FILE__));
+	wp_enqueue_script('jquery_scrollspy', plugins_url('jquery-scrollspy.js', __FILE__), array('jquery'));
 	$board_text = '';
 	if ($atts['board']) {
 		$board = $atts['board'];
@@ -254,13 +255,30 @@ function pinpress_board_shortcode($atts) {
 		}
 		$page_base_url = plugin_dir_url(__FILE__);
 		$board_text = '';
-		$pins_columns = pinpress_load_pins($board, $columns, 0);
+		list($pins_columns, $pin_count) = pinpress_load_pins($board, $columns, 0);
 		for ($i=0;$i<$columns;$i++) {
 			$board_text = $board_text . '<div id="pinpress_column_' . $i . '" style="display:inline-block;align:top;vertical-align:top;">' . $pins_columns[$i] . '</div>';
 		}
 		$board_text = $board_text . pinpress_get_load_more_pins($board, $columns, $pinpress_pins_per_page);
 		$text = <<<EOT1
 		<script type="text/javascript">
+		
+		var pinpress_board_name = '$board';
+		var pinpress_columns = $columns;
+		var pinpress_pins_per_page = $pinpress_pins_per_page;
+		var pinpress_pin_offset = $pinpress_pins_per_page;
+		
+		jQuery(document).ready(function() {
+			pinpress_setup_scroll_listener();
+		});
+
+		function pinpress_setup_scroll_listener() {
+			jQuery(window).scrollspy({
+				min: jQuery('#pinpress_more_pins_container').offset().top - jQuery(window).height(),
+				max: document.height,
+				onEnter: function(el, position) { pinpress_load_more_pins(pinpress_board_name, pinpress_columns, pinpress_pin_offset); },
+			});
+		}
 
 		function pinpress_load_more_pins(board, columns, offset) {
 			jQuery.get('$page_base_url/pinpress_paging.php', {board: board, columns: columns, offset: offset}, pinpress_process_more_pins);
@@ -273,9 +291,11 @@ function pinpress_board_shortcode($atts) {
 					jQuery('#pinpress_column_' + i).append(data.columns[i]);
 				}
 				jQuery('#pinpress_pins_container').append(data.more_pins);
+				pinpress_pin_offset += data.count;
+				pinpress_setup_scroll_listener();
 			} else if (data.columns && data.columns.length == 0) {
 				jQuery('#pinpress_load_more_pins').remove();
-				jQuery('#pinpress_more_pins_container').append("<span>No more pins available!</span>");
+				jQuery('#pinpress_more_pins_container').html("<span>Fin</span>");
 			}
 		}
 
