@@ -258,7 +258,7 @@ function pinpress_board_shortcode($atts) {
 		$board_text = '';
 		list($pins_columns, $pin_count) = pinpress_load_pins($board, $columns, 0, $category);
 		for ($i=0;$i<$columns;$i++) {
-			$board_text = $board_text . '<div id="pinpress_column_' . $i . '" style="display:inline-block;align:top;vertical-align:top;">' . $pins_columns[$i] . '</div>';
+			$board_text = $board_text . '<div id="pinpress_column_' . $i . '" class="pinpress_column">' . $pins_columns[$i] . '</div>';
 		}
 		$board_text = $board_text . pinpress_get_load_more_pins($board, $columns, $pinpress_pins_per_page, $category);
 		$text = <<<EOT1

@@ -93,3 +93,8 @@
 	padding:5px;
 	margin:5px;
 }
+
+.pinpress_column {
+	display: inline-block;
+	vertical-align: top;
+}
