@@ -78,3 +78,18 @@
 #pinpress_more_pins_container {
 	text-align: center;
 }
+
+.pinpress_pin_item img {
+	padding:0;
+	border:none;
+	background:none;
+	margin:0 auto;
+	display: block;
+}
+
+.pinpress_pin_item {
+	width:170px;
+	border:1px solid #cccccc;
+	padding:5px;
+	margin:5px;
+}

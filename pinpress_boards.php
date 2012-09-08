@@ -247,23 +247,25 @@ function pinpress_board_shortcode($atts) {
 	wp_enqueue_style('pinpress_style', plugins_url('pinpress_style.css', __FILE__));
 	wp_enqueue_script('jquery_scrollspy', plugins_url('jquery-scrollspy.js', __FILE__), array('jquery'));
 	$board_text = '';
-	if ($atts['board']) {
+	if ($atts['board'] || $atts['category']) {
 		$board = $atts['board'];
+		$category = $atts['category'];
 		$columns = 3;
 		if ($atts['columns']) {
 			$columns = $atts['columns'];
 		}
 		$page_base_url = plugin_dir_url(__FILE__);
 		$board_text = '';
-		list($pins_columns, $pin_count) = pinpress_load_pins($board, $columns, 0);
+		list($pins_columns, $pin_count) = pinpress_load_pins($board, $columns, 0, $category);
 		for ($i=0;$i<$columns;$i++) {
 			$board_text = $board_text . '<div id="pinpress_column_' . $i . '" style="display:inline-block;align:top;vertical-align:top;">' . $pins_columns[$i] . '</div>';
 		}
-		$board_text = $board_text . pinpress_get_load_more_pins($board, $columns, $pinpress_pins_per_page);
+		$board_text = $board_text . pinpress_get_load_more_pins($board, $columns, $pinpress_pins_per_page, $category);
 		$text = <<<EOT1
 		<script type="text/javascript">
 		
 		var pinpress_board_name = '$board';
+		var pinpress_category_name = '$category';
 		var pinpress_columns = $columns;
 		var pinpress_pins_per_page = $pinpress_pins_per_page;
 		var pinpress_pin_offset = $pinpress_pins_per_page;
@@ -280,8 +282,8 @@ function pinpress_board_shortcode($atts) {
 			});
 		}
 
-		function pinpress_load_more_pins(board, columns, offset) {
-			jQuery.get('$page_base_url/pinpress_paging.php', {board: board, columns: columns, offset: offset}, pinpress_process_more_pins);
+		function pinpress_load_more_pins(board, columns, offset, category) {
+			jQuery.get('$page_base_url/pinpress_paging.php', {board: board, columns: columns, offset: offset, category:category}, pinpress_process_more_pins);
 		}
 
 		function pinpress_process_more_pins(data, textStatus, jqHXR) {
