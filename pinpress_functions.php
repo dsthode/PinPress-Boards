@@ -17,7 +17,7 @@ function pinpress_load_pins($board, $columns, $offset, $category) {
 	if ($isboard) {
 		$args = array('post_type' => 'pin', 'boards' => $board, 'posts_per_page' => $pinpress_pins_per_page, 'offset' => $offset);
 	} elseif ($iscategory) {
-		$args = array('post_type' => 'post', 'category' => $category, 'posts_per_page' => $pinpress_pins_per_page, 'offset' => $offset);
+		$args = array('post_type' => 'post', 'category_name' => $category, 'posts_per_page' => $pinpress_pins_per_page, 'offset' => $offset);
 	}
 	$query = new WP_Query($args);
 	$count = 0;
