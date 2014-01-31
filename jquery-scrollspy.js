@@ -17,7 +17,7 @@
             container: window,
             onEnter: options.onEnter ? options.onEnter : [],
             onLeave: options.onLeave ? options.onLeave : [],
-            onTick: options.onTick ? options.onTick : [],
+            onTick: options.onTick ? options.onTick : []
           }
           
           var options = $.extend( {}, defaults, options );
