@@ -29,6 +29,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 /* Custom post types (pinboard and pins like) */
 
+$pinpress_pins_per_page = 21;
+
 add_action('init', 'pinpress_pin_register');
  
 function pinpress_pin_register() {
@@ -186,7 +188,7 @@ function pinpress_pin_image_meta() {
 			pinpress_pin_set_image();
 		}
 	}
-
+	
 </script>
 
 <?php
@@ -241,17 +243,70 @@ add_action("manage_posts_custom_column",  "pinpress_pin_custom_columns");
 add_filter("manage_edit-pin_columns", "pinpress_pin_edit_columns");
 
 function pinpress_board_shortcode($atts) {
+	global $pinpress_pins_per_page;
 	wp_enqueue_style('pinpress_style', plugins_url('pinpress_style.css', __FILE__));
+	wp_enqueue_script('jquery_scrollspy', plugins_url('jquery-scrollspy.js', __FILE__), array('jquery'));
 	$board_text = '';
-	if ($atts['board']) {
+	if ($atts['board'] || $atts['category']) {
 		$board = $atts['board'];
+		$category = $atts['category'];
 		$columns = 3;
 		if ($atts['columns']) {
 			$columns = $atts['columns'];
 		}
-		$board_text = pinpress_load_pins($board, $columns, 0);
+		$page_base_url = plugin_dir_url(__FILE__);
+		$board_text = '';
+		list($pins_columns, $pin_count) = pinpress_load_pins($board, $columns, 0, $category);
+		for ($i=0;$i<$columns;$i++) {
+			$board_text = $board_text . '<div id="pinpress_column_' . $i . '" class="pinpress_column">' . $pins_columns[$i] . '</div>';
+		}
+		$board_text = $board_text . pinpress_get_load_more_pins($board, $columns, $pinpress_pins_per_page, $category);
+		$text = <<<EOT1
+		<script type="text/javascript">
+		
+		var pinpress_board_name = '$board';
+		var pinpress_category_name = '$category';
+		var pinpress_columns = $columns;
+		var pinpress_pins_per_page = $pinpress_pins_per_page;
+		var pinpress_pin_offset = $pinpress_pins_per_page;
+		
+		jQuery(document).ready(function() {
+			pinpress_setup_scroll_listener();
+		});
+
+		function pinpress_setup_scroll_listener() {
+			jQuery(window).scrollspy({
+				min: jQuery('#pinpress_more_pins_container').offset().top - jQuery(window).height(),
+				max: document.height,
+				onEnter: function(el, position) { pinpress_load_more_pins(pinpress_board_name, pinpress_columns, pinpress_pin_offset); },
+			});
+		}
+
+		function pinpress_load_more_pins(board, columns, offset, category) {
+			jQuery.get('$page_base_url/pinpress_paging.php', {board: board, columns: columns, offset: offset, category:category}, pinpress_process_more_pins);
+		}
+
+		function pinpress_process_more_pins(data, textStatus, jqHXR) {
+			if (data.columns && data.columns.length > 0) {
+				jQuery('#pinpress_more_pins_container').remove();
+				for (var i=0; i<data.columns.length; i++) {
+					jQuery('#pinpress_column_' + i).append(data.columns[i]);
+				}
+				jQuery('#pinpress_pins_container').append(data.more_pins);
+				pinpress_pin_offset += data.count;
+				pinpress_setup_scroll_listener();
+			} else if (data.columns && data.columns.length == 0) {
+				jQuery('#pinpress_load_more_pins').remove();
+				jQuery('#pinpress_more_pins_container').html("<span>Fin</span>");
+			}
+		}
+
+		</script>
+
+		<div id="pinpress_pins_container">$board_text</div>
+EOT1;
 	}
-	return $board_text;
+	return $text;
 }
 
 add_shortcode('pinpress_board', 'pinpress_board_shortcode');
