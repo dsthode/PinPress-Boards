@@ -42,7 +42,7 @@ function pinpress_board_pin($pin_url, $image_url, $title, $text, $iscategory) {
 	if ($iscategory) {
 		$text = <<<EOT2
 		<div class="pinpress_pin_item">
-			<a href="$pin_url">
+			<a href="$pin_url" rel="nofollow">
 				<div class="pinpress_pin_title"><strong>$title</strong></div>
 				$image_url
 			</a>
@@ -51,7 +51,7 @@ EOT2;
 	} else {
 		$text = <<<EOT4
 		<div class="pinpress_pin_item">
-			<a href="$pin_url">
+			<a href="$pin_url" rel="nofollow">
 				<div class="pinpress_pin_title"><strong>$title</strong></div>
 				<img src="$base_url/timthumb.php?src=$image_url&w=150" width="150"/>
 			</a>
