@@ -4,7 +4,7 @@ function pinpress_get_load_more_pins($board, $columns, $offset, $category) {
 	global $pinpress_pins_per_page;
 	$text = <<<EOT3
 	<div id="pinpress_more_pins_container">
-		<a id="pinpress_load_more_pins" href="#" onclick="javascript:pinpress_load_more_pins('$board', '$columns', '$offset', '$category');return false;">Cargar m&aacute;s pins</a>
+		<a id="pinpress_load_more_pins" href="#" onclick="javascript:pinpress_load_more_pins('$board', '$columns', '$offset', '$category');return false;">Ver m&aacute;s fotos</a>
 	</div>
 EOT3;
 	return $text;
